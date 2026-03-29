@@ -99,8 +99,8 @@ function updateHud() {
 }
 
 function timerWindowMs() {
-  const base = modeConfig[appState.mode].boss ? 2800 : 4200;
-  return Math.max(1800, base - appState.speedLevel * 240);
+  const base = modeConfig[appState.mode].boss ? 4200 : 6200;
+  return Math.max(3200, base - appState.speedLevel * 180);
 }
 
 function pickWord() {
@@ -134,7 +134,7 @@ function startTimer(container, ms, onTimeout) {
 function header(word, prompt) {
   const wrap = document.createElement('div');
   wrap.className = 'microgame';
-  wrap.innerHTML = `<h3>${word.irish} (${word.english}) ${word.sprite}</h3><p class="prompt">${prompt}</p>`;
+  wrap.innerHTML = `<h3>${word.irish} ${word.sprite}</h3><p class="prompt">${prompt}</p>`;
   return wrap;
 }
 
@@ -149,14 +149,14 @@ function resolveMicrogame(success, word, bonus = 0, timeout = false) {
     appState.streak += 1;
     appState.bestStreak = Math.max(appState.bestStreak, appState.streak);
     appState.mastery.set(word.id, (appState.mastery.get(word.id) || 0) + 1);
-    ui.feedback.textContent = `Great! +${Math.floor(points)} • ${word.irish}`;
+    ui.feedback.textContent = `Maith thú! +${Math.floor(points)} • ${word.irish}`;
     ui.feedback.className = 'feedback good';
   } else {
     appState.streak = 0;
     appState.lives -= 1;
     appState.wrongWords.add(word.id);
     appState.mastery.set(word.id, Math.max(0, (appState.mastery.get(word.id) || 0) - 1));
-    ui.feedback.textContent = timeout ? `Too slow! ${word.irish} means ${word.english}.` : `Miss! ${word.irish} = ${word.english}.`;
+    ui.feedback.textContent = timeout ? `Ró-mhall! ${word.irish} = ${word.english}.` : `Ar iarraidh! ${word.irish} = ${word.english}.`;
     ui.feedback.className = 'feedback bad';
   }
 
@@ -172,7 +172,7 @@ function nextMicrogame() {
   if (appState.lives <= 0 || appState.runGames >= appState.maxGames) return endRun();
 
   appState.runGames += 1;
-  appState.speedLevel = Math.floor(appState.runGames / 3);
+  appState.speedLevel = Math.floor(appState.runGames / 5);
   const word = pickWord();
   appState.wordsLearnedThisRun.add(word.id);
   console.info(`Pronunciation ▶ ${word.audio} (${word.pronunciation})`);
@@ -189,7 +189,7 @@ function nextMicrogame() {
 }
 
 function renderTapSelect(word) {
-  const wrap = header(word, 'Hit the matching sprite before the timer ends!');
+  const wrap = header(word, 'Brúigh an íomhá cheart sula gcríochnaíonn an t-am!');
   const choicesEl = document.createElement('div');
   choicesEl.className = 'choices';
   const decoys = ['🪨', '🧱', '🌪️', '🦆', '🥔'].sort(() => Math.random() - 0.5).slice(0, 3);
@@ -208,7 +208,7 @@ function renderTapSelect(word) {
 }
 
 function renderDragMatch(word) {
-  const wrap = header(word, 'Drag the correct sprite onto the target zone.');
+  const wrap = header(word, 'Tarraing an íomhá cheart go dtí an sprioclimistéar.');
   const target = document.createElement('div');
   target.className = 'swipe-pad';
   target.textContent = 'Drop Zone 🎯';
@@ -239,10 +239,11 @@ function renderSwipe(word) {
   const directions = ['up', 'down', 'left', 'right'];
   const expected = directions[Math.floor(Math.random() * directions.length)];
   const arrows = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' };
-  const wrap = header(word, `Swipe ${expected.toUpperCase()} ${arrows[expected]}`);
+  const dirIrish = { up: 'suas', down: 'síos', left: 'ar chlé', right: 'ar dheis' };
+  const wrap = header(word, `Scuab ${dirIrish[expected].toUpperCase()} ${arrows[expected]}`);
   const pad = document.createElement('div');
   pad.className = 'swipe-pad';
-  pad.textContent = 'Swipe here';
+  pad.textContent = 'Scuab anseo';
   let startX = 0;
   let startY = 0;
   const onStart = (e) => {
@@ -270,7 +271,7 @@ function renderSwipe(word) {
 }
 
 function renderHold(word) {
-  const wrap = header(word, 'Hold to fill. Release inside the target zone (45-70%).');
+  const wrap = header(word, 'Coinnigh síos chun líonadh. Scaoil sa sprioc (45-70%).');
   const meter = document.createElement('div');
   meter.className = 'hold-meter';
   const fill = document.createElement('div');
@@ -278,7 +279,7 @@ function renderHold(word) {
   meter.appendChild(fill);
   const zone = document.createElement('p');
   zone.className = 'hold-zone';
-  zone.textContent = 'Target Zone: 45% - 70%';
+  zone.textContent = 'Sprioc: 45% - 70%';
   let value = 0;
   let intervalId = null;
   const begin = () => {
@@ -309,7 +310,7 @@ function renderHold(word) {
 }
 
 function renderLaneDodge(word) {
-  const wrap = header(word, 'Swipe left/right to dodge hazards and survive!');
+  const wrap = header(word, 'Scuab clé/deis chun contúirtí a sheachaint!');
   const lanesEl = document.createElement('div');
   lanesEl.className = 'lane-wrap';
   let lane = 1;
@@ -376,7 +377,7 @@ function renderLaneDodge(word) {
 }
 
 function renderCatch(word) {
-  const wrap = header(word, 'Drag the basket and catch only the correct item.');
+  const wrap = header(word, 'Bog an cliabhán agus gabh an rud ceart amháin.');
   const zone = document.createElement('div');
   zone.className = 'catch-zone';
   const basket = document.createElement('div');
