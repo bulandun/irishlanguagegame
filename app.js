@@ -1,495 +1,455 @@
-const appState = {
-  mode: 'quick',
-  currentWord: null,
-  score: 0,
-  streak: 0,
-  bestStreak: 0,
-  lives: 3,
-  speedLevel: 0,
-  runGames: 0,
-  maxGames: 12,
-  wordsLearnedThisRun: new Set(),
-  wrongWords: new Set(),
-  mastery: new Map(),
-  activeCleanup: null,
-};
-
-const vocabulary = [
-  { id: 'bo', irish: 'Bó', english: 'Cow', pronunciation: 'boh', category: 'animals', difficulty: 1, gameType: 'drag_match', sprite: '🐄', audio: 'audio/bo.mp3' },
-  { id: 'madra', irish: 'Madra', english: 'Dog', pronunciation: 'mah-druh', category: 'animals', difficulty: 1, gameType: 'drag_match', sprite: '🐕', audio: 'audio/madra.mp3' },
-  { id: 'ean', irish: 'Éan', english: 'Bird', pronunciation: 'ayn', category: 'animals', difficulty: 1, gameType: 'swipe', sprite: '🐦', audio: 'audio/ean.mp3' },
-  { id: 'ull', irish: 'Úll', english: 'Apple', pronunciation: 'ool', category: 'food', difficulty: 1, gameType: 'catch', sprite: '🍎', audio: 'audio/ull.mp3' },
-  { id: 'uisce', irish: 'Uisce', english: 'Water', pronunciation: 'ish-ka', category: 'nature', difficulty: 1, gameType: 'hold', sprite: '💧', audio: 'audio/uisce.mp3' },
-  { id: 'arain', irish: 'Arán', english: 'Bread', pronunciation: 'ah-rawn', category: 'food', difficulty: 1, gameType: 'tap_select', sprite: '🍞', audio: 'audio/arain.mp3' },
-  { id: 'bord', irish: 'Bord', english: 'Table', pronunciation: 'bord', category: 'home_objects', difficulty: 2, gameType: 'tap_select', sprite: '🪑', audio: 'audio/bord.mp3' },
-  { id: 'cota', irish: 'Cóta', english: 'Coat', pronunciation: 'koh-ta', category: 'clothes', difficulty: 1, gameType: 'drag_match', sprite: '🧥', audio: 'audio/cota.mp3' },
-  { id: 'bus', irish: 'Bus', english: 'Bus', pronunciation: 'boos', category: 'transport', difficulty: 1, gameType: 'lane_dodge', sprite: '🚌', audio: 'audio/bus.mp3' },
-  { id: 'pairc', irish: 'Páirc', english: 'Park', pronunciation: 'paw-rik', category: 'places', difficulty: 2, gameType: 'tap_select', sprite: '🏞️', audio: 'audio/pairc.mp3' },
-  { id: 'baisteach', irish: 'Báisteach', english: 'Rain', pronunciation: 'bawsh-takh', category: 'weather', difficulty: 2, gameType: 'lane_dodge', sprite: '🌧️', audio: 'audio/baisteach.mp3' },
-  { id: 'grian', irish: 'Grian', english: 'Sun', pronunciation: 'gree-an', category: 'weather', difficulty: 1, gameType: 'tap_select', sprite: '☀️', audio: 'audio/grian.mp3' },
-  { id: 'lamh', irish: 'Lámh', english: 'Hand', pronunciation: 'lawv', category: 'body_parts', difficulty: 1, gameType: 'tap_select', sprite: '✋', audio: 'audio/lamh.mp3' },
-  { id: 'duilleog', irish: 'Duilleog', english: 'Leaf', pronunciation: 'dill-ohg', category: 'nature', difficulty: 2, gameType: 'catch', sprite: '🍃', audio: 'audio/duilleog.mp3' },
-  { id: 'rith', irish: 'Rith', english: 'Run', pronunciation: 'rih', category: 'daily_verbs', difficulty: 1, gameType: 'tap_select', sprite: '🏃', audio: 'audio/rith.mp3' },
-  { id: 'leim', irish: 'Léim', english: 'Jump', pronunciation: 'laym', category: 'action_verbs', difficulty: 1, gameType: 'swipe', sprite: '🦘', audio: 'audio/leim.mp3' },
-  { id: 'oscail', irish: 'Oscail', english: 'Open', pronunciation: 'usk-il', category: 'daily_verbs', difficulty: 2, gameType: 'tap_select', sprite: '🚪', audio: 'audio/oscail.mp3' },
-  { id: 'dun', irish: 'Dún', english: 'Close', pronunciation: 'doon', category: 'daily_verbs', difficulty: 2, gameType: 'tap_select', sprite: '🔒', audio: 'audio/dun.mp3' },
-  { id: 'glan', irish: 'Glan', english: 'Clean', pronunciation: 'glahn', category: 'daily_verbs', difficulty: 2, gameType: 'drag_match', sprite: '🧽', audio: 'audio/glan.mp3' },
-  { id: 'ol', irish: 'Ól', english: 'Drink', pronunciation: 'ohl', category: 'daily_verbs', difficulty: 1, gameType: 'hold', sprite: '🥤', audio: 'audio/ol.mp3' },
+const categories = [
+  'animals',
+  'food',
+  'household_objects',
+  'clothes',
+  'transport',
+  'weather',
+  'body_parts',
+  'common_objects',
 ];
 
-const modeConfig = {
-  quick: { label: 'Quick Play', maxGames: 12, lives: 3 },
-  endless: { label: 'Endless Arcade', maxGames: Number.MAX_SAFE_INTEGER, lives: 1 },
-  daily: { label: 'Daily Challenge', maxGames: 10, lives: 3, bonus: 300 },
-  category: { label: 'Category Run', maxGames: 10, lives: 3, filter: ['animals', 'food', 'home_objects', 'clothes', 'weather', 'places', 'transport', 'nature', 'body_parts'] },
-  verb: { label: 'Verb Rush', maxGames: 10, lives: 3, filter: ['daily_verbs', 'action_verbs'] },
-  mixed: { label: 'Mixed Madness', maxGames: 14, lives: 3 },
-  practice: { label: 'Practice Mode', maxGames: 8, lives: 99, practiceOnly: true },
-  boss: { label: 'Boss Mode', maxGames: 6, lives: 2, boss: true },
-};
-
-const leaderboards = {
-  daily: [{ name: 'Aoife', score: 5920 }, { name: 'Niamh', score: 5480 }, { name: 'Tadhg', score: 5160 }, { name: 'You', score: 0 }],
-};
+const words = [
+  { id: 'bo', irish: 'bó', english: 'cow', image: '🐄', category: 'animals', audio: 'bo.mp3' },
+  { id: 'madra', irish: 'madra', english: 'dog', image: '🐕', category: 'animals', audio: 'madra.mp3' },
+  { id: 'cat', irish: 'cat', english: 'cat', image: '🐈', category: 'animals', audio: 'cat.mp3' },
+  { id: 'muic', irish: 'muc', english: 'pig', image: '🐖', category: 'animals', audio: 'muc.mp3' },
+  { id: 'ull', irish: 'úll', english: 'apple', image: '🍎', category: 'food', audio: 'ull.mp3' },
+  { id: 'aran', irish: 'arán', english: 'bread', image: '🍞', category: 'food', audio: 'aran.mp3' },
+  { id: 'iasc', irish: 'iasc', english: 'fish', image: '🐟', category: 'food', audio: 'iasc.mp3' },
+  { id: 'cairid', irish: 'cairéad', english: 'carrot', image: '🥕', category: 'food', audio: 'cairead.mp3' },
+  { id: 'bord', irish: 'bord', english: 'table', image: '🪵', category: 'household_objects', audio: 'bord.mp3' },
+  { id: 'cathaoir', irish: 'cathaoir', english: 'chair', image: '🪑', category: 'household_objects', audio: 'cathaoir.mp3' },
+  { id: 'leaba', irish: 'leaba', english: 'bed', image: '🛏️', category: 'household_objects', audio: 'leaba.mp3' },
+  { id: 'lampa', irish: 'lampa', english: 'lamp', image: '💡', category: 'household_objects', audio: 'lampa.mp3' },
+  { id: 'cota', irish: 'cóta', english: 'coat', image: '🧥', category: 'clothes', audio: 'cota.mp3' },
+  { id: 'briste', irish: 'bríste', english: 'trousers', image: '👖', category: 'clothes', audio: 'briste.mp3' },
+  { id: 'hata', irish: 'hata', english: 'hat', image: '🧢', category: 'clothes', audio: 'hata.mp3' },
+  { id: 'brog', irish: 'bróg', english: 'shoe', image: '👟', category: 'clothes', audio: 'brog.mp3' },
+  { id: 'bus', irish: 'bus', english: 'bus', image: '🚌', category: 'transport', audio: 'bus.mp3' },
+  { id: 'traein', irish: 'traein', english: 'train', image: '🚆', category: 'transport', audio: 'traein.mp3' },
+  { id: 'rothar', irish: 'rothar', english: 'bike', image: '🚲', category: 'transport', audio: 'rothar.mp3' },
+  { id: 'eitlean', irish: 'eitleán', english: 'plane', image: '✈️', category: 'transport', audio: 'eitlean.mp3' },
+  { id: 'grian', irish: 'grian', english: 'sun', image: '☀️', category: 'weather', audio: 'grian.mp3' },
+  { id: 'fearthainn', irish: 'fearthainn', english: 'rain', image: '🌧️', category: 'weather', audio: 'fearthainn.mp3' },
+  { id: 'sneachta', irish: 'sneachta', english: 'snow', image: '❄️', category: 'weather', audio: 'sneachta.mp3' },
+  { id: 'gaoth', irish: 'gaoth', english: 'wind', image: '💨', category: 'weather', audio: 'gaoth.mp3' },
+  { id: 'lamh', irish: 'lámh', english: 'hand', image: '✋', category: 'body_parts', audio: 'lamh.mp3' },
+  { id: 'cos', irish: 'cos', english: 'leg', image: '🦵', category: 'body_parts', audio: 'cos.mp3' },
+  { id: 'suil', irish: 'súil', english: 'eye', image: '👁️', category: 'body_parts', audio: 'suil.mp3' },
+  { id: 'cluas', irish: 'cluas', english: 'ear', image: '👂', category: 'body_parts', audio: 'cluas.mp3' },
+  { id: 'leabhar', irish: 'leabhar', english: 'book', image: '📘', category: 'common_objects', audio: 'leabhar.mp3' },
+  { id: 'eochair', irish: 'eochair', english: 'key', image: '🔑', category: 'common_objects', audio: 'eochair.mp3' },
+  { id: 'fón', irish: 'fón', english: 'phone', image: '📱', category: 'common_objects', audio: 'fon.mp3' },
+  { id: 'cupan', irish: 'cupán', english: 'cup', image: '☕', category: 'common_objects', audio: 'cupan.mp3' },
+];
 
 const ui = {
   screens: {
     home: document.getElementById('screen-home'),
-    onboard: document.getElementById('screen-onboard'),
-    run: document.getElementById('screen-run'),
+    mode: document.getElementById('screen-mode'),
+    game: document.getElementById('screen-game'),
     results: document.getElementById('screen-results'),
   },
-  host: document.getElementById('microgame-host'),
-  feedback: document.getElementById('feedback'),
+  categorySelect: document.getElementById('category-select'),
+  modeTitle: document.getElementById('mode-title'),
+  modeCopy: document.getElementById('mode-copy'),
+  btnStart: document.getElementById('btn-start'),
+  btnBack: document.getElementById('btn-back'),
   hudMode: document.getElementById('hud-mode'),
   hudScore: document.getElementById('hud-score'),
   hudStreak: document.getElementById('hud-streak'),
   hudLives: document.getElementById('hud-lives'),
+  hudTimer: document.getElementById('hud-timer'),
+  irishWord: document.getElementById('irish-word'),
+  englishHint: document.getElementById('english-hint'),
+  gallery: document.getElementById('gallery'),
+  feedback: document.getElementById('feedback'),
+  crosshair: document.getElementById('crosshair'),
+  resultScore: document.getElementById('result-score'),
+  resultAccuracy: document.getElementById('result-accuracy'),
+  resultStreak: document.getElementById('result-streak'),
+  resultReviewed: document.getElementById('result-reviewed'),
+  resultMastery: document.getElementById('result-mastery'),
+  leaderboardList: document.getElementById('leaderboard-list'),
+  btnReplay: document.getElementById('btn-replay'),
+  btnHome: document.getElementById('btn-home'),
+  btnAudio: document.getElementById('btn-audio'),
+};
+
+const leaderboards = {
+  daily: [
+    { player: 'Aoife', score: 8700 },
+    { player: 'Tadhg', score: 8220 },
+    { player: 'Niamh', score: 7900 },
+  ],
+  weekly: [
+    { player: 'Bríd', score: 41400 },
+    { player: 'Eoin', score: 39850 },
+    { player: 'Cian', score: 37600 },
+  ],
+  alltime: [
+    { player: 'SeánMór', score: 150220 },
+    { player: 'PixelPuca', score: 148010 },
+    { player: 'You', score: 0 },
+  ],
+  category: [
+    { player: 'AnimalAce', score: 9300 },
+    { player: 'FoodFlash', score: 9020 },
+    { player: 'You', score: 0 },
+  ],
+};
+
+const modeConfig = {
+  classic: { label: 'Classic', lives: 3, timed: false, rounds: 24 },
+  timed: { label: 'Timed 60s', lives: 99, timed: true, seconds: 60 },
+  daily: { label: 'Daily Challenge', lives: 3, timed: false, rounds: 20, fixedSeed: 'daily' },
+  practice: { label: 'Practice', lives: 5, timed: false, rounds: 20 },
+};
+
+const state = {
+  mode: 'classic',
+  practiceCategory: categories[0],
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  lives: 3,
+  timeLeft: 60,
+  round: 0,
+  hits: 0,
+  shots: 0,
+  reviewed: new Set(),
+  mastery: new Map(),
+  currentWord: null,
+  running: false,
+  moveRaf: null,
+  gameClock: null,
+  spawnTimeout: null,
+  speed: 1,
+  targetCount: 4,
+  responseMs: 3200,
 };
 
 function showScreen(name) {
-  Object.values(ui.screens).forEach((s) => s.classList.remove('active'));
+  Object.values(ui.screens).forEach((screen) => screen.classList.remove('active'));
   ui.screens[name].classList.add('active');
 }
 
-function setMode(mode) {
-  appState.mode = mode;
-  appState.maxGames = modeConfig[mode].maxGames;
-  appState.lives = modeConfig[mode].lives;
-}
-
-function resetRun() {
-  appState.score = 0;
-  appState.streak = 0;
-  appState.bestStreak = 0;
-  appState.speedLevel = 0;
-  appState.runGames = 0;
-  appState.wordsLearnedThisRun.clear();
-  updateHud();
-}
-
-function cleanupActiveMicrogame() {
-  if (appState.activeCleanup) {
-    appState.activeCleanup();
-    appState.activeCleanup = null;
-  }
+function setupCategorySelect() {
+  ui.categorySelect.innerHTML = '';
+  categories.forEach((category) => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category.replace('_', ' ');
+    ui.categorySelect.appendChild(option);
+  });
 }
 
 function updateHud() {
-  const cfg = modeConfig[appState.mode];
-  ui.hudMode.textContent = cfg.label;
-  ui.hudScore.textContent = `Score ${Math.floor(appState.score)}`;
-  ui.hudStreak.textContent = `Streak ${appState.streak}`;
-  ui.hudLives.textContent = `Lives ${appState.lives}`;
+  ui.hudMode.textContent = modeConfig[state.mode].label;
+  ui.hudScore.textContent = `Score ${Math.floor(state.score)}`;
+  ui.hudStreak.textContent = `Streak x${state.streak}`;
+  ui.hudLives.textContent = `Lives ${state.lives > 90 ? '∞' : state.lives}`;
+  ui.hudTimer.textContent = `Time ${Math.max(0, Math.ceil(state.timeLeft))}`;
 }
 
-function timerWindowMs() {
-  const base = modeConfig[appState.mode].boss ? 4200 : 5000;
-  return Math.max(3000, base - appState.speedLevel * 120);
+function setFeedback(text, type = '') {
+  ui.feedback.textContent = text;
+  ui.feedback.className = `feedback ${type}`.trim();
 }
 
-function pickWord() {
-  const cfg = modeConfig[appState.mode];
-  let pool = vocabulary;
-  if (cfg.practiceOnly) {
-    const practice = vocabulary.filter((w) => appState.wrongWords.has(w.id));
-    pool = practice.length ? practice : vocabulary.slice(0, 6);
-  } else if (cfg.filter) {
-    pool = vocabulary.filter((w) => cfg.filter.includes(w.category));
+function pickPool() {
+  if (state.mode === 'practice') {
+    return words.filter((w) => w.category === state.practiceCategory);
   }
-  return pool[Math.floor(Math.random() * pool.length)];
+  return words;
 }
 
-function startTimer(container, ms, onTimeout) {
-  const bar = document.createElement('div');
-  bar.className = 'timer-bar';
-  const fill = document.createElement('div');
-  fill.className = 'fill';
-  bar.appendChild(fill);
-  container.appendChild(bar);
-  fill.style.transition = `transform ${ms}ms linear`;
-  requestAnimationFrame(() => {
-    fill.style.transformOrigin = 'left center';
-    fill.style.transform = 'scaleX(0)';
-  });
-  const timeoutId = setTimeout(onTimeout, ms);
-  return () => clearTimeout(timeoutId);
-}
-
-function header(word, prompt) {
-  const wrap = document.createElement('div');
-  wrap.className = 'microgame';
-  wrap.innerHTML = `<h3>${word.irish} ${word.sprite}</h3><p class="prompt">${prompt}</p>`;
-  return wrap;
-}
-
-function resolveMicrogame(success, word, bonus = 0, timeout = false) {
-  cleanupActiveMicrogame();
-  if (success) {
-    const base = 120;
-    const speedBonus = 30 + appState.speedLevel * 12;
-    const streakMult = 1 + Math.min(appState.streak, 12) * 0.1;
-    const points = (base + speedBonus + bonus) * streakMult;
-    appState.score += points;
-    appState.streak += 1;
-    appState.bestStreak = Math.max(appState.bestStreak, appState.streak);
-    appState.mastery.set(word.id, (appState.mastery.get(word.id) || 0) + 1);
-    ui.feedback.textContent = `Maith thú! +${Math.floor(points)} • ${word.irish} (${word.english})`;
-    ui.feedback.className = 'feedback good';
-  } else {
-    appState.streak = 0;
-    appState.lives -= 1;
-    appState.wrongWords.add(word.id);
-    appState.mastery.set(word.id, Math.max(0, (appState.mastery.get(word.id) || 0) - 1));
-    ui.feedback.textContent = timeout ? `Ró-mhall! ${word.irish} = ${word.english}.` : `Ar iarraidh! ${word.irish} = ${word.english}.`;
-    ui.feedback.className = 'feedback bad';
+function seededOrder(pool) {
+  if (state.mode !== 'daily') return pool.sort(() => Math.random() - 0.5);
+  const dayKey = new Date().toISOString().slice(0, 10);
+  let seed = dayKey.split('-').join('').split('').reduce((acc, n) => acc + Number(n), 0);
+  const items = [...pool];
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const j = Math.floor((seed / 233280) * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
   }
+  return items;
+}
 
-  if (appState.mode === 'daily' && appState.runGames === appState.maxGames) {
-    appState.score += modeConfig.daily.bonus;
-  }
+function resetRun() {
+  const cfg = modeConfig[state.mode];
+  state.score = 0;
+  state.streak = 0;
+  state.bestStreak = 0;
+  state.lives = cfg.lives;
+  state.timeLeft = cfg.seconds || 99;
+  state.round = 0;
+  state.hits = 0;
+  state.shots = 0;
+  state.reviewed.clear();
+  state.running = true;
+  state.speed = 1;
+  state.targetCount = 4;
+  state.responseMs = 3200;
+  ui.gallery.replaceChildren();
+  setFeedback('Shoot the matching target!', '');
   updateHud();
-  setTimeout(nextMicrogame, 650);
 }
 
-function nextMicrogame() {
-  cleanupActiveMicrogame();
-  if (appState.lives <= 0 || appState.runGames >= appState.maxGames) return endRun();
-
-  appState.runGames += 1;
-  appState.speedLevel = Math.floor(appState.runGames / 5);
-  const word = pickWord();
-  appState.currentWord = word;
-  appState.wordsLearnedThisRun.add(word.id);
-  console.info(`Pronunciation ▶ ${word.audio} (${word.pronunciation})`);
-
-  const renderers = {
-    tap_select: renderTapSelect,
-    drag_match: renderDragMatch,
-    swipe: renderSwipe,
-    hold: renderHold,
-    lane_dodge: renderLaneDodge,
-    catch: renderCatch,
-  };
-  (renderers[word.gameType] || renderTapSelect)(word);
+function animateCrosshair(x, y) {
+  ui.crosshair.style.left = `${x}px`;
+  ui.crosshair.style.top = `${y}px`;
+  ui.crosshair.classList.add('active');
+  setTimeout(() => ui.crosshair.classList.remove('active'), 160);
 }
 
-function renderTapSelect(word) {
-  const wrap = header(word, 'Brúigh an íomhá cheart sula gcríochnaíonn an t-am!');
-  const choicesEl = document.createElement('div');
-  choicesEl.className = 'choices';
-  const decoys = ['🪨', '🧱', '🌪️', '🦆', '🥔'].sort(() => Math.random() - 0.5).slice(0, 3);
-  const choices = [word.sprite, ...decoys].sort(() => Math.random() - 0.5);
-  choices.forEach((icon) => {
-    const btn = document.createElement('button');
-    btn.className = 'choice';
-    btn.textContent = icon;
-    btn.onclick = () => resolveMicrogame(icon === word.sprite, word);
-    choicesEl.appendChild(btn);
+function chooseRoundWord() {
+  if (!state.deck || !state.deck.length) {
+    state.deck = seededOrder(pickPool());
+  }
+  const word = state.deck[state.round % state.deck.length];
+  state.currentWord = word;
+  state.reviewed.add(word.id);
+}
+
+function getDistractors(correct, count) {
+  const pool = pickPool().filter((w) => w.id !== correct.id);
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count - 1);
+}
+
+function buildTargets() {
+  const galleryRect = ui.gallery.getBoundingClientRect();
+  const correct = state.currentWord;
+  const options = [correct, ...getDistractors(correct, state.targetCount)].sort(() => Math.random() - 0.5);
+
+  options.forEach((word, index) => {
+    const target = document.createElement('button');
+    target.className = 'target';
+    target.dataset.wordId = word.id;
+    target.innerHTML = `<span class="target-inner">${word.image}<span class="label">${word.english}</span></span>`;
+
+    const startX = Math.random() * (galleryRect.width - 86);
+    const startY = 14 + Math.random() * (galleryRect.height - 96);
+    const vx = (Math.random() * 0.9 + 0.45) * (index % 2 === 0 ? 1 : -1) * state.speed;
+    const vy = (Math.random() * 0.55 + 0.2) * (Math.random() > 0.5 ? 1 : -1) * state.speed;
+    target.style.left = `${startX}px`;
+    target.style.top = `${startY}px`;
+
+    const motion = { x: startX, y: startY, vx, vy };
+    target.motion = motion;
+
+    target.addEventListener('click', (event) => {
+      if (!state.running) return;
+      state.shots += 1;
+      const localX = event.clientX - galleryRect.left;
+      const localY = event.clientY - galleryRect.top;
+      animateCrosshair(localX, localY);
+      resolveShot(word.id === state.currentWord.id, word);
+    });
+
+    ui.gallery.appendChild(target);
   });
-  wrap.appendChild(choicesEl);
-  const cancel = startTimer(wrap, timerWindowMs(), () => resolveMicrogame(false, word, 0, true));
-  appState.activeCleanup = cancel;
-  ui.host.replaceChildren(wrap);
 }
 
-function renderDragMatch(word) {
-  const wrap = header(word, 'Tarraing an íomhá cheart go dtí an sprioclimistéar.');
-  const target = document.createElement('div');
-  target.className = 'swipe-pad';
-  target.textContent = 'Drop Zone 🎯';
-  const row = document.createElement('div');
-  row.className = 'drag-row';
-  const options = [word.sprite, '🪵', '🪨', '🧊'].sort(() => Math.random() - 0.5);
-  options.forEach((icon) => {
-    const el = document.createElement('button');
-    el.className = 'drag-item';
-    el.textContent = icon;
-    el.draggable = true;
-    el.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', icon));
-    el.onclick = () => resolveMicrogame(icon === word.sprite, word);
-    row.appendChild(el);
-  });
-  target.addEventListener('dragover', (e) => e.preventDefault());
-  target.addEventListener('drop', (e) => {
-    const icon = e.dataTransfer.getData('text/plain');
-    resolveMicrogame(icon === word.sprite, word, 25);
-  });
-  wrap.append(target, row);
-  const cancel = startTimer(wrap, timerWindowMs(), () => resolveMicrogame(false, word, 0, true));
-  appState.activeCleanup = cancel;
-  ui.host.replaceChildren(wrap);
+function runMotion() {
+  const galleryRect = ui.gallery.getBoundingClientRect();
+  const maxX = galleryRect.width - 80;
+  const maxY = galleryRect.height - 80;
+
+  const frame = () => {
+    if (!state.running) return;
+    ui.gallery.querySelectorAll('.target').forEach((target) => {
+      const m = target.motion;
+      m.x += m.vx;
+      m.y += m.vy;
+      if (m.x < 0 || m.x > maxX) m.vx *= -1;
+      if (m.y < 0 || m.y > maxY) m.vy *= -1;
+      m.x = Math.max(0, Math.min(maxX, m.x));
+      m.y = Math.max(0, Math.min(maxY, m.y));
+      target.style.left = `${m.x}px`;
+      target.style.top = `${m.y}px`;
+    });
+    state.moveRaf = requestAnimationFrame(frame);
+  };
+
+  cancelAnimationFrame(state.moveRaf);
+  state.moveRaf = requestAnimationFrame(frame);
 }
 
-function renderSwipe(word) {
-  const directions = ['up', 'down', 'left', 'right'];
-  const expected = directions[Math.floor(Math.random() * directions.length)];
-  const arrows = { up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️' };
-  const dirIrish = { up: 'suas', down: 'síos', left: 'ar chlé', right: 'ar dheis' };
-  const wrap = header(word, `Scuab ${dirIrish[expected].toUpperCase()} ${arrows[expected]}`);
-  const pad = document.createElement('div');
-  pad.className = 'swipe-pad';
-  pad.textContent = 'Scuab anseo';
-  let startX = 0;
-  let startY = 0;
-  const onStart = (e) => {
-    const t = e.touches ? e.touches[0] : e;
-    startX = t.clientX;
-    startY = t.clientY;
-  };
-  const onEnd = (e) => {
-    const t = e.changedTouches ? e.changedTouches[0] : e;
-    const dx = t.clientX - startX;
-    const dy = t.clientY - startY;
-    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-    const actual = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-    resolveMicrogame(actual === expected, word, 20);
-  };
-  pad.addEventListener('touchstart', onStart, { passive: true });
-  pad.addEventListener('touchend', onEnd, { passive: true });
-  pad.addEventListener('mousedown', onStart);
-  pad.addEventListener('mouseup', onEnd);
-
-  wrap.appendChild(pad);
-  const cancel = startTimer(wrap, timerWindowMs(), () => resolveMicrogame(false, word, 0, true));
-  appState.activeCleanup = cancel;
-  ui.host.replaceChildren(wrap);
+function playPronunciation() {
+  if (!state.currentWord) return;
+  const utter = new SpeechSynthesisUtterance(state.currentWord.irish);
+  utter.lang = 'ga-IE';
+  utter.rate = 0.9;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
 }
 
-function renderHold(word) {
-  const wrap = header(word, 'Coinnigh síos chun líonadh. Scaoil sa sprioc (45-70%).');
-  const meter = document.createElement('div');
-  meter.className = 'hold-meter';
-  const fill = document.createElement('div');
-  fill.className = 'hold-fill';
-  meter.appendChild(fill);
-  const zone = document.createElement('p');
-  zone.className = 'hold-zone';
-  zone.textContent = 'Sprioc: 45% - 70%';
-  let value = 0;
-  let intervalId = null;
-  const begin = () => {
-    if (intervalId) return;
-    intervalId = setInterval(() => {
-      value = Math.min(100, value + 2.8);
-      fill.style.width = `${value}%`;
-      if (value >= 100) resolveMicrogame(false, word);
-    }, 45);
-  };
-  const stop = () => {
-    clearInterval(intervalId);
-    intervalId = null;
-    resolveMicrogame(value >= 45 && value <= 70, word, Math.max(0, 35 - Math.abs(57 - value)));
-  };
-  meter.addEventListener('mousedown', begin);
-  meter.addEventListener('touchstart', begin, { passive: true });
-  meter.addEventListener('mouseup', stop);
-  meter.addEventListener('mouseleave', () => intervalId && stop());
-  meter.addEventListener('touchend', stop, { passive: true });
-  wrap.append(meter, zone);
-  const cancel = startTimer(wrap, timerWindowMs(), () => resolveMicrogame(false, word, 0, true));
-  appState.activeCleanup = () => {
-    clearInterval(intervalId);
-    cancel();
-  };
-  ui.host.replaceChildren(wrap);
+function scheduleTimeout() {
+  clearTimeout(state.spawnTimeout);
+  state.spawnTimeout = setTimeout(() => {
+    state.shots += 1;
+    resolveShot(false, state.currentWord, true);
+  }, state.responseMs);
 }
 
-function renderLaneDodge(word) {
-  const wrap = header(word, 'Scuab clé/deis chun contúirtí a sheachaint!');
-  const lanesEl = document.createElement('div');
-  lanesEl.className = 'lane-wrap';
-  let lane = 1;
-  const lanes = [0, 1, 2].map(() => {
-    const el = document.createElement('div');
-    el.className = 'lane';
-    lanesEl.appendChild(el);
-    return el;
-  });
-  const player = document.createElement('div');
-  player.className = 'player';
-  player.textContent = word.sprite;
-  lanes[lane].appendChild(player);
+function resolveShot(correct, word, timeout = false) {
+  if (!state.running) return;
+  clearTimeout(state.spawnTimeout);
 
-  const setLane = (next) => {
-    lane = Math.max(0, Math.min(2, next));
-    lanes[lane].appendChild(player);
-  };
-  let sx = 0;
-  lanesEl.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
-  lanesEl.addEventListener('touchend', (e) => {
-    const dx = e.changedTouches[0].clientX - sx;
-    if (dx > 25) setLane(lane + 1);
-    if (dx < -25) setLane(lane - 1);
-  }, { passive: true });
-
-  const buttons = document.createElement('div');
-  buttons.className = 'choices';
-  ['⬅️', '➡️'].forEach((arrow, i) => {
-    const b = document.createElement('button');
-    b.className = 'lane-btn';
-    b.textContent = arrow;
-    b.onclick = () => setLane(lane + (i === 0 ? -1 : 1));
-    buttons.appendChild(b);
-  });
-
-  let ticks = 0;
-  const obstacleTicker = setInterval(() => {
-    ticks += 1;
-    const badLane = Math.floor(Math.random() * 3);
-    const o = document.createElement('div');
-    o.className = 'obstacle';
-    o.textContent = '💥';
-    lanes[badLane].appendChild(o);
-    o.animate([{ top: '-8px' }, { top: '80px' }], { duration: 380, easing: 'linear' });
-    setTimeout(() => o.remove(), 380);
-    if (badLane === lane && ticks > 1) {
-      clearInterval(obstacleTicker);
-      resolveMicrogame(false, word);
-    }
-    if (ticks >= 8) {
-      clearInterval(obstacleTicker);
-      resolveMicrogame(true, word, 55);
-    }
-  }, 350);
-
-  wrap.append(lanesEl, buttons);
-  const cancel = startTimer(wrap, timerWindowMs(), () => resolveMicrogame(false, word, 0, true));
-  appState.activeCleanup = () => {
-    clearInterval(obstacleTicker);
-    cancel();
-  };
-  ui.host.replaceChildren(wrap);
-}
-
-function renderCatch(word) {
-  const wrap = header(word, 'Bog an cliabhán agus gabh an rud ceart amháin.');
-  const zone = document.createElement('div');
-  zone.className = 'catch-zone';
-  const basket = document.createElement('div');
-  basket.className = 'basket';
-  basket.textContent = '🧺';
-  zone.appendChild(basket);
-  let basketX = 45;
-  let score = 0;
-
-  function moveBasket(clientX) {
-    const rect = zone.getBoundingClientRect();
-    basketX = ((clientX - rect.left) / rect.width) * 100;
-    basketX = Math.max(5, Math.min(90, basketX));
-    basket.style.left = `${basketX}%`;
+  if (correct) {
+    state.hits += 1;
+    state.streak += 1;
+    state.bestStreak = Math.max(state.bestStreak, state.streak);
+    const speedBonus = Math.max(10, Math.floor((state.responseMs / 100) * 0.8));
+    const streakMult = 1 + Math.min(state.streak, 12) * 0.12;
+    const points = (100 + speedBonus) * streakMult;
+    state.score += points;
+    state.mastery.set(word.id, Math.min(5, (state.mastery.get(word.id) || 0) + 1));
+    setFeedback(`Direct hit! ${word.irish} = ${word.english} (+${Math.floor(points)})`, 'good');
+  } else {
+    state.streak = 0;
+    state.lives -= 1;
+    state.mastery.set(state.currentWord.id, Math.max(0, (state.mastery.get(state.currentWord.id) || 0) - 1));
+    const message = timeout
+      ? `Too slow! ${state.currentWord.irish} means ${state.currentWord.english}.`
+      : `Miss! You hit ${word.english}. ${state.currentWord.irish} means ${state.currentWord.english}.`;
+    setFeedback(message, 'bad');
   }
 
-  zone.addEventListener('pointermove', (e) => {
-    if (e.buttons || e.pointerType === 'touch') moveBasket(e.clientX);
-  });
-  zone.addEventListener('pointerdown', (e) => moveBasket(e.clientX));
+  updateHud();
+  setTimeout(nextRound, 400);
+}
 
-  const dropper = setInterval(() => {
-    const item = document.createElement('div');
-    item.className = 'faller';
-    const good = Math.random() > 0.35;
-    item.textContent = good ? word.sprite : '💣';
-    const x = 8 + Math.random() * 84;
-    item.style.left = `${x}%`;
-    zone.appendChild(item);
-    const start = Date.now();
-    const fly = setInterval(() => {
-      const p = Math.min(1, (Date.now() - start) / 700);
-      item.style.top = `${8 + p * 90}px`;
-      if (p >= 1) {
-        clearInterval(fly);
-        const hit = Math.abs(x - basketX) < 12;
-        if (hit && good) score += 1;
-        if (hit && !good) score = -99;
-        item.remove();
-      }
-    }, 30);
-  }, 300);
+function scaleDifficulty() {
+  state.speed = 1 + Math.floor(state.round / 6) * 0.2;
+  state.targetCount = Math.min(6, 4 + Math.floor(state.round / 5));
+  state.responseMs = Math.max(1300, 3200 - state.round * 65);
+}
 
-  wrap.append(zone);
-  const cancel = startTimer(wrap, timerWindowMs(), () => resolveMicrogame(false, word, 0, true));
-  appState.activeCleanup = () => {
-    clearInterval(dropper);
-    cancel();
-  };
-  ui.host.replaceChildren(wrap);
+function nextRound() {
+  if (!state.running) return;
+  const cfg = modeConfig[state.mode];
 
-  setTimeout(() => {
-    if (score >= 2) resolveMicrogame(true, word, 60);
-    else if (score < 0) resolveMicrogame(false, word);
-  }, timerWindowMs() - 120);
+  if (state.lives <= 0) return endRun();
+  if (!cfg.timed && state.round >= cfg.rounds) return endRun();
+
+  state.round += 1;
+  scaleDifficulty();
+  chooseRoundWord();
+
+  ui.irishWord.textContent = state.currentWord.irish;
+  ui.englishHint.textContent = state.currentWord.english;
+  ui.gallery.replaceChildren();
+
+  buildTargets();
+  runMotion();
+  scheduleTimeout();
+  updateHud();
+
+  if (state.round <= 3) {
+    setFeedback('Tap the matching picture!', '');
+  }
+}
+
+function runClock() {
+  clearInterval(state.gameClock);
+  if (!modeConfig[state.mode].timed) return;
+  state.gameClock = setInterval(() => {
+    if (!state.running) return;
+    state.timeLeft -= 1;
+    updateHud();
+    if (state.timeLeft <= 0) endRun();
+  }, 1000);
 }
 
 function endRun() {
-  cleanupActiveMicrogame();
-  const learned = appState.wordsLearnedThisRun.size;
-  const missed = appState.wrongWords.size;
-  const rank = estimateRank(appState.score);
-  document.getElementById('result-score').textContent = `Score: ${Math.floor(appState.score)}`;
-  document.getElementById('result-streak').textContent = `Best Streak: ${appState.bestStreak}`;
-  document.getElementById('result-learned').textContent = `Words encountered: ${learned}`;
-  document.getElementById('result-missed').textContent = `Words to practice: ${missed}`;
-  document.getElementById('result-rank').textContent = `Estimated daily rank: #${rank}`;
-  renderLeaderboardPreview();
-  document.getElementById('profile-stats').textContent = `Level ${1 + Math.floor(appState.score / 1400)} • Daily Streak ${Math.min(7, Math.floor(appState.runGames / 3))} • Mastered ${Array.from(appState.mastery.values()).filter((v) => v >= 3).length} words`;
+  state.running = false;
+  cancelAnimationFrame(state.moveRaf);
+  clearInterval(state.gameClock);
+  clearTimeout(state.spawnTimeout);
+
+  if (state.mode === 'daily') {
+    state.score += 250;
+    leaderboards.daily.push({ player: 'You', score: Math.floor(state.score) });
+    leaderboards.daily.sort((a, b) => b.score - a.score);
+    leaderboards.daily = leaderboards.daily.slice(0, 5);
+  }
+
+  const accuracy = state.shots ? Math.round((state.hits / state.shots) * 100) : 0;
+  const mastered = [...state.mastery.values()].filter((value) => value >= 3).length;
+
+  ui.resultScore.textContent = `Score: ${Math.floor(state.score)}`;
+  ui.resultAccuracy.textContent = `Accuracy: ${accuracy}% (${state.hits}/${state.shots})`;
+  ui.resultStreak.textContent = `Best streak: x${state.bestStreak}`;
+  ui.resultReviewed.textContent = `Words reviewed: ${state.reviewed.size}`;
+  ui.resultMastery.textContent = `Words mastered this profile: ${mastered}`;
+
+  renderLeaderboard(document.querySelector('.leader-tab.active')?.dataset.board || 'daily');
   showScreen('results');
 }
 
-function estimateRank(score) {
-  if (score > 7000) return 1;
-  if (score > 6100) return 2;
-  if (score > 5400) return 3;
-  if (score > 4200) return 8;
-  return 35;
+function startRun() {
+  resetRun();
+  showScreen('game');
+  runClock();
+  nextRound();
 }
 
-function renderLeaderboardPreview() {
-  const ul = document.getElementById('leaderboard-preview');
-  const list = [...leaderboards.daily];
-  list[list.length - 1] = { name: 'You', score: Math.floor(appState.score) };
-  list.sort((a, b) => b.score - a.score);
-  ul.replaceChildren(...list.map((row, i) => {
+function renderLeaderboard(board) {
+  ui.leaderboardList.innerHTML = '';
+  (leaderboards[board] || []).forEach((entry) => {
     const li = document.createElement('li');
-    li.textContent = `#${i + 1} ${row.name} — ${row.score}`;
-    return li;
-  }));
-}
-
-function bindControls() {
-  ['quick', 'endless', 'daily', 'category', 'verb', 'mixed', 'practice', 'boss'].forEach((mode) => {
-    document.getElementById(`btn-${mode}`).onclick = () => {
-      setMode(mode);
-      showScreen('onboard');
-    };
+    li.textContent = `${entry.player} — ${entry.score}`;
+    ui.leaderboardList.appendChild(li);
   });
-  document.getElementById('btn-start-run').onclick = () => {
-    resetRun();
-    showScreen('run');
-    nextMicrogame();
-  };
-  document.getElementById('btn-replay').onclick = () => showScreen('onboard');
-  document.getElementById('btn-home').onclick = () => showScreen('home');
 }
 
-bindControls();
+function openModeScreen(mode) {
+  state.mode = mode;
+  state.deck = [];
+  if (mode === 'practice') {
+    ui.modeTitle.textContent = 'Practice Mode';
+    ui.modeCopy.textContent = 'Choose one category and drill it with arcade speed.';
+    ui.categorySelect.parentElement.style.display = 'block';
+    showScreen('mode');
+    return;
+  }
+
+  ui.categorySelect.parentElement.style.display = 'none';
+  startRun();
+}
+
+function attachEvents() {
+  document.querySelectorAll('[data-mode]').forEach((btn) => {
+    btn.addEventListener('click', () => openModeScreen(btn.dataset.mode));
+  });
+
+  document.querySelectorAll('.leader-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.leader-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderLeaderboard(tab.dataset.board);
+    });
+  });
+
+  ui.btnStart.addEventListener('click', () => {
+    state.practiceCategory = ui.categorySelect.value;
+    startRun();
+  });
+  ui.btnBack.addEventListener('click', () => showScreen('home'));
+  ui.btnReplay.addEventListener('click', () => startRun());
+  ui.btnHome.addEventListener('click', () => showScreen('home'));
+  ui.btnAudio.addEventListener('click', playPronunciation);
+}
+
+function init() {
+  setupCategorySelect();
+  attachEvents();
+  renderLeaderboard('daily');
+}
+
+init();

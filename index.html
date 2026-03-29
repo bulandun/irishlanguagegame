@@ -3,83 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>FocalFocal! Irish Microgame Mayhem</title>
+  <title>Carnival Craic — Irish Shooting Gallery</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="app" class="screen-stack">
+  <main id="app" class="app">
     <section id="screen-home" class="screen active">
       <header class="title-wrap">
-        <h1>FOCALFOCAL!</h1>
-        <p class="subtitle">Cluichí beaga Gaeilge</p>
+        <h1>CARNIVAL CRAIC</h1>
+        <p>Tap fast. Learn Gaeilge. Beat the fairground.</p>
       </header>
-      <div class="card">
-        <p>Foghlaim Gaeilge trí shlabhra tapa de mhionchluichí stuama.</p>
-        <div class="button-grid">
-          <button id="btn-quick" class="pixel-btn">Quick Play</button>
-          <button id="btn-endless" class="pixel-btn">Endless Arcade</button>
-          <button id="btn-daily" class="pixel-btn">Daily Challenge</button>
-          <button id="btn-category" class="pixel-btn">Category Run</button>
-          <button id="btn-verb" class="pixel-btn">Verb Rush</button>
-          <button id="btn-mixed" class="pixel-btn">Mixed Madness</button>
-          <button id="btn-practice" class="pixel-btn">Practice Mode</button>
-          <button id="btn-boss" class="pixel-btn">Boss Mode</button>
+
+      <article class="card mascot-card">
+        <div class="carney-face">🎩</div>
+        <div>
+          <h2>Meet Seán the Carney</h2>
+          <p>He flashes an Irish word. You blast the matching target before it escapes.</p>
         </div>
-      </div>
-      <div class="card small">
-        <h2>Player Profile</h2>
-        <p id="profile-stats">Level 1 • Daily Streak 0 • Mastered 0 words</p>
-      </div>
+      </article>
+
+      <article class="card">
+        <h2>Choose Mode</h2>
+        <div class="mode-grid">
+          <button class="pixel-btn" data-mode="classic">Classic</button>
+          <button class="pixel-btn" data-mode="timed">Timed 60s</button>
+          <button class="pixel-btn" data-mode="daily">Daily Challenge</button>
+          <button class="pixel-btn" data-mode="practice">Practice Category</button>
+        </div>
+      </article>
+
+      <article class="card small">
+        <h2>Leaderboards</h2>
+        <div class="leader-tabs">
+          <button class="leader-tab active" data-board="daily">Daily</button>
+          <button class="leader-tab" data-board="weekly">Weekly</button>
+          <button class="leader-tab" data-board="alltime">All-Time</button>
+          <button class="leader-tab" data-board="category">Category</button>
+        </div>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
+      </article>
     </section>
 
-    <section id="screen-onboard" class="screen">
-      <div class="card">
-        <h2>How it works</h2>
-        <ol>
-          <li>See or hear an Irish word</li>
-          <li>React with tap / drag / swipe / hold</li>
-          <li>Build combo, score, and mastery</li>
-        </ol>
-        <label for="start-level">Difficulty</label>
-        <select id="start-level" class="pixel-select">
-          <option value="beginner">Beginner</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="advanced">Advanced</option>
-        </select>
-        <button id="btn-start-run" class="pixel-btn wide">Start Run</button>
-      </div>
+    <section id="screen-mode" class="screen">
+      <article class="card">
+        <h2 id="mode-title">Choose Category</h2>
+        <p id="mode-copy">Practice focuses one category at a time.</p>
+        <label for="category-select">Category</label>
+        <select id="category-select" class="pixel-select"></select>
+        <button id="btn-start" class="pixel-btn">Start Run</button>
+        <button id="btn-back" class="pixel-btn ghost">Back</button>
+      </article>
     </section>
 
-    <section id="screen-run" class="screen">
+    <section id="screen-game" class="screen">
       <header class="hud">
-        <span id="hud-mode">Quick Play</span>
+        <span id="hud-mode">Classic</span>
         <span id="hud-score">Score 0</span>
-        <span id="hud-streak">Streak 0</span>
+        <span id="hud-streak">Streak x0</span>
         <span id="hud-lives">Lives 3</span>
+        <span id="hud-timer">Time 60</span>
       </header>
-      <div id="microgame-host" class="microgame-host"></div>
-      <footer class="feedback" id="feedback">Réidh?</footer>
+
+      <section class="booth">
+        <div class="bunting">🎪 ✦ 🎯 ✦ 🎪</div>
+        <div class="carney-stage">
+          <div class="carney">🤹‍♂️</div>
+          <div class="sign">
+            <p class="sign-label">Shoot this word</p>
+            <h2 id="irish-word">bó</h2>
+            <p id="english-hint">cow</p>
+          </div>
+          <button id="btn-audio" class="audio-btn" aria-label="Play pronunciation">🔊</button>
+        </div>
+
+        <div id="gallery" class="gallery"></div>
+        <div id="crosshair" class="crosshair"></div>
+      </section>
+
+      <footer id="feedback" class="feedback">Tap the matching target!</footer>
     </section>
 
     <section id="screen-results" class="screen">
-      <div class="card">
+      <article class="card">
         <h2>Run Complete</h2>
         <p id="result-score"></p>
+        <p id="result-accuracy"></p>
         <p id="result-streak"></p>
-        <p id="result-learned"></p>
-        <p id="result-missed"></p>
-        <p id="result-rank"></p>
-        <div class="button-grid single">
+        <p id="result-reviewed"></p>
+        <p id="result-mastery"></p>
+        <div class="mode-grid single">
           <button id="btn-replay" class="pixel-btn">Play Again</button>
-          <button id="btn-home" class="pixel-btn">Home</button>
+          <button id="btn-home" class="pixel-btn ghost">Home</button>
         </div>
-      </div>
-      <div class="card small">
-        <h2>Leaderboard Preview</h2>
-        <ul id="leaderboard-preview" class="leaderboard"></ul>
-      </div>
+      </article>
     </section>
-  </div>
+  </main>
 
   <script src="app.js"></script>
 </body>
