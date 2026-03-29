@@ -1,5 +1,6 @@
 const appState = {
   mode: 'quick',
+  currentWord: null,
   score: 0,
   streak: 0,
   bestStreak: 0,
@@ -14,30 +15,34 @@ const appState = {
 };
 
 const vocabulary = [
-  { id: 'bo', irish: 'Bó', english: 'Cow', pronunciation: 'boh', category: 'animals', difficulty: 1, gameType: 'lane_dodge', sprite: '🐄', audio: 'audio/bo.mp3' },
+  { id: 'bo', irish: 'Bó', english: 'Cow', pronunciation: 'boh', category: 'animals', difficulty: 1, gameType: 'drag_match', sprite: '🐄', audio: 'audio/bo.mp3' },
   { id: 'madra', irish: 'Madra', english: 'Dog', pronunciation: 'mah-druh', category: 'animals', difficulty: 1, gameType: 'drag_match', sprite: '🐕', audio: 'audio/madra.mp3' },
   { id: 'ean', irish: 'Éan', english: 'Bird', pronunciation: 'ayn', category: 'animals', difficulty: 1, gameType: 'swipe', sprite: '🐦', audio: 'audio/ean.mp3' },
   { id: 'ull', irish: 'Úll', english: 'Apple', pronunciation: 'ool', category: 'food', difficulty: 1, gameType: 'catch', sprite: '🍎', audio: 'audio/ull.mp3' },
-  { id: 'uisce', irish: 'Uisce', english: 'Water', pronunciation: 'ish-ka', category: 'food', difficulty: 2, gameType: 'hold', sprite: '💧', audio: 'audio/uisce.mp3' },
-  { id: 'baisteach', irish: 'Báisteach', english: 'Rain', pronunciation: 'bawsh-takh', category: 'weather', difficulty: 2, gameType: 'lane_dodge', sprite: '🌧️', audio: 'audio/baisteach.mp3' },
-  { id: 'rith', irish: 'Rith', english: 'Run', pronunciation: 'rih', category: 'movement_verbs', difficulty: 1, gameType: 'tap_select', sprite: '🏃', audio: 'audio/rith.mp3' },
-  { id: 'leim', irish: 'Léim', english: 'Jump', pronunciation: 'laym', category: 'movement_verbs', difficulty: 1, gameType: 'swipe', sprite: '🦘', audio: 'audio/leim.mp3' },
-  { id: 'snamh', irish: 'Snámh', english: 'Swim', pronunciation: 'snaav', category: 'movement_verbs', difficulty: 2, gameType: 'lane_dodge', sprite: '🏊', audio: 'audio/snamh.mp3' },
-  { id: 'eitil', irish: 'Eitil', english: 'Fly', pronunciation: 'etch-il', category: 'movement_verbs', difficulty: 2, gameType: 'swipe', sprite: '✈️', audio: 'audio/eitil.mp3' },
-  { id: 'oscail', irish: 'Oscail', english: 'Open', pronunciation: 'usk-il', category: 'household_verbs', difficulty: 2, gameType: 'swipe', sprite: '🚪', audio: 'audio/oscail.mp3' },
-  { id: 'dun', irish: 'Dún', english: 'Close', pronunciation: 'doon', category: 'household_verbs', difficulty: 2, gameType: 'tap_select', sprite: '🔒', audio: 'audio/dun.mp3' },
-  { id: 'glan', irish: 'Glan', english: 'Clean', pronunciation: 'glahn', category: 'household_verbs', difficulty: 2, gameType: 'drag_match', sprite: '🧽', audio: 'audio/glan.mp3' },
-  { id: 'bus', irish: 'Bus', english: 'Bus', pronunciation: 'boos', category: 'transport', difficulty: 1, gameType: 'lane_dodge', sprite: '🚌', audio: 'audio/bus.mp3' },
+  { id: 'uisce', irish: 'Uisce', english: 'Water', pronunciation: 'ish-ka', category: 'nature', difficulty: 1, gameType: 'hold', sprite: '💧', audio: 'audio/uisce.mp3' },
+  { id: 'arain', irish: 'Arán', english: 'Bread', pronunciation: 'ah-rawn', category: 'food', difficulty: 1, gameType: 'tap_select', sprite: '🍞', audio: 'audio/arain.mp3' },
+  { id: 'bord', irish: 'Bord', english: 'Table', pronunciation: 'bord', category: 'home_objects', difficulty: 2, gameType: 'tap_select', sprite: '🪑', audio: 'audio/bord.mp3' },
   { id: 'cota', irish: 'Cóta', english: 'Coat', pronunciation: 'koh-ta', category: 'clothes', difficulty: 1, gameType: 'drag_match', sprite: '🧥', audio: 'audio/cota.mp3' },
-  { id: 'ol', irish: 'Ól', english: 'Drink', pronunciation: 'ohl', category: 'daily_actions', difficulty: 1, gameType: 'hold', sprite: '🥤', audio: 'audio/ol.mp3' },
+  { id: 'bus', irish: 'Bus', english: 'Bus', pronunciation: 'boos', category: 'transport', difficulty: 1, gameType: 'lane_dodge', sprite: '🚌', audio: 'audio/bus.mp3' },
+  { id: 'pairc', irish: 'Páirc', english: 'Park', pronunciation: 'paw-rik', category: 'places', difficulty: 2, gameType: 'tap_select', sprite: '🏞️', audio: 'audio/pairc.mp3' },
+  { id: 'baisteach', irish: 'Báisteach', english: 'Rain', pronunciation: 'bawsh-takh', category: 'weather', difficulty: 2, gameType: 'lane_dodge', sprite: '🌧️', audio: 'audio/baisteach.mp3' },
+  { id: 'grian', irish: 'Grian', english: 'Sun', pronunciation: 'gree-an', category: 'weather', difficulty: 1, gameType: 'tap_select', sprite: '☀️', audio: 'audio/grian.mp3' },
+  { id: 'lamh', irish: 'Lámh', english: 'Hand', pronunciation: 'lawv', category: 'body_parts', difficulty: 1, gameType: 'tap_select', sprite: '✋', audio: 'audio/lamh.mp3' },
+  { id: 'duilleog', irish: 'Duilleog', english: 'Leaf', pronunciation: 'dill-ohg', category: 'nature', difficulty: 2, gameType: 'catch', sprite: '🍃', audio: 'audio/duilleog.mp3' },
+  { id: 'rith', irish: 'Rith', english: 'Run', pronunciation: 'rih', category: 'daily_verbs', difficulty: 1, gameType: 'tap_select', sprite: '🏃', audio: 'audio/rith.mp3' },
+  { id: 'leim', irish: 'Léim', english: 'Jump', pronunciation: 'laym', category: 'action_verbs', difficulty: 1, gameType: 'swipe', sprite: '🦘', audio: 'audio/leim.mp3' },
+  { id: 'oscail', irish: 'Oscail', english: 'Open', pronunciation: 'usk-il', category: 'daily_verbs', difficulty: 2, gameType: 'tap_select', sprite: '🚪', audio: 'audio/oscail.mp3' },
+  { id: 'dun', irish: 'Dún', english: 'Close', pronunciation: 'doon', category: 'daily_verbs', difficulty: 2, gameType: 'tap_select', sprite: '🔒', audio: 'audio/dun.mp3' },
+  { id: 'glan', irish: 'Glan', english: 'Clean', pronunciation: 'glahn', category: 'daily_verbs', difficulty: 2, gameType: 'drag_match', sprite: '🧽', audio: 'audio/glan.mp3' },
+  { id: 'ol', irish: 'Ól', english: 'Drink', pronunciation: 'ohl', category: 'daily_verbs', difficulty: 1, gameType: 'hold', sprite: '🥤', audio: 'audio/ol.mp3' },
 ];
 
 const modeConfig = {
   quick: { label: 'Quick Play', maxGames: 12, lives: 3 },
   endless: { label: 'Endless Arcade', maxGames: Number.MAX_SAFE_INTEGER, lives: 1 },
   daily: { label: 'Daily Challenge', maxGames: 10, lives: 3, bonus: 300 },
-  category: { label: 'Category Run', maxGames: 10, lives: 3, filter: ['animals', 'food', 'home_objects', 'weather', 'transport'] },
-  verb: { label: 'Verb Rush', maxGames: 10, lives: 3, filter: ['common_verbs', 'movement_verbs', 'household_verbs', 'daily_actions'] },
+  category: { label: 'Category Run', maxGames: 10, lives: 3, filter: ['animals', 'food', 'home_objects', 'clothes', 'weather', 'places', 'transport', 'nature', 'body_parts'] },
+  verb: { label: 'Verb Rush', maxGames: 10, lives: 3, filter: ['daily_verbs', 'action_verbs'] },
   mixed: { label: 'Mixed Madness', maxGames: 14, lives: 3 },
   practice: { label: 'Practice Mode', maxGames: 8, lives: 99, practiceOnly: true },
   boss: { label: 'Boss Mode', maxGames: 6, lives: 2, boss: true },
@@ -99,8 +104,8 @@ function updateHud() {
 }
 
 function timerWindowMs() {
-  const base = modeConfig[appState.mode].boss ? 4200 : 6200;
-  return Math.max(3200, base - appState.speedLevel * 180);
+  const base = modeConfig[appState.mode].boss ? 4200 : 5000;
+  return Math.max(3000, base - appState.speedLevel * 120);
 }
 
 function pickWord() {
@@ -149,7 +154,7 @@ function resolveMicrogame(success, word, bonus = 0, timeout = false) {
     appState.streak += 1;
     appState.bestStreak = Math.max(appState.bestStreak, appState.streak);
     appState.mastery.set(word.id, (appState.mastery.get(word.id) || 0) + 1);
-    ui.feedback.textContent = `Maith thú! +${Math.floor(points)} • ${word.irish}`;
+    ui.feedback.textContent = `Maith thú! +${Math.floor(points)} • ${word.irish} (${word.english})`;
     ui.feedback.className = 'feedback good';
   } else {
     appState.streak = 0;
@@ -174,6 +179,7 @@ function nextMicrogame() {
   appState.runGames += 1;
   appState.speedLevel = Math.floor(appState.runGames / 5);
   const word = pickWord();
+  appState.currentWord = word;
   appState.wordsLearnedThisRun.add(word.id);
   console.info(`Pronunciation ▶ ${word.audio} (${word.pronunciation})`);
 

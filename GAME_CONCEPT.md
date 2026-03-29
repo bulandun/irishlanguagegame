@@ -1,160 +1,143 @@
-# FocalFocal! — Irish Microgame Mayhem (Mobile-First Design Blueprint)
+# FocalFocal! — Mobile-First Irish Arcade Learning Game
 
-## 1) Game Concept
-FocalFocal! is a WarioWare-style Irish learning game where each vocabulary word becomes a tiny arcade challenge. The player is not answering quiz cards; they are dodging, aiming, catching, sorting, swiping, balancing, and reacting under pressure. Sessions are short, loud, and replayable, with a retro handheld aesthetic inspired by classic Nintendo-era pixel games.
+## 1) Overall Game Concept
+**FocalFocal!** is a portrait mobile game inspired by WarioWare-style microgames, but tuned for **clarity first**.
 
-**Core fantasy:** Become the top “Arcade Gaeilge” champion by mastering words through action.
+- Every round teaches one Irish word (noun or verb).
+- The player gets one clear prompt and one simple action.
+- A round lasts roughly **3–5 seconds**.
+- The goal is “instant fun, instant understanding, instant feedback.”
 
----
-
-## 2) Core Gameplay Loop
-1. Start a mode (Quick Play, Endless Arcade, Daily Challenge, etc.)
-2. Receive an Irish prompt via text + sprite + optional pronunciation audio
-3. Instantly play a 3–8 second microgame linked to the word meaning
-4. Get immediate success/fail feedback (visual + sound + corrective translation)
-5. Earn points, speed bonus, and streak multiplier
-6. Move into the next faster microgame with a different mechanic
-7. End run with summary: score, words seen, mistakes, mastery gains, leaderboard placement
+The learning effect comes from repetition + visual association + action memory (e.g., seeing **Bó** and dragging a cow into a field again and again).
 
 ---
 
-## 3) Diverse Microgame System (Critical Requirement)
-The system is template-driven and intentionally varied so it never collapses into “press the right button” repetition.
+## 2) Gameplay Loop
+1. Start run (Quick, Daily, Category, Verb, etc.)
+2. Show one Irish prompt (word + sprite, with optional pronunciation audio)
+3. Play one simple microgame linked to that word
+4. Show immediate success/fail feedback with English meaning
+5. Award points + streak/speed bonuses
+6. Move to next word quickly
+7. End run with score, streak, reviewed words, and leaderboard preview
 
-### A. Movement / Navigation
-- Lane dodge (Báisteach, Bus)
-- Obstacle sprint (Rith)
-- Jump gap swipe (Léim)
-- Swim through channels (Snámh)
-- Fly through rings (Eitil)
-
-### B. Physics / Object Interaction
-- Drag to destination (Madra, Cóta)
-- Catch falling targets while avoiding hazards (Úll)
-- Hold-and-release fill meter (Uisce, Ól)
-- Throw-angle mini challenge (future: Madra advanced variant)
-- Stack / balance challenge (future: “teach/household objects”)
-
-### C. Reaction / Timing
-- Tap exactly on timing zone (Dóigh)
-- Freeze-on-cue challenge (future: fan mini-game)
-- Quick-draw reaction flash (future: verbs set)
-- Countdown survival burst (boss wave rounds)
-
-### D. Sorting / Recognition
-- Conveyor category sort (animals vs food)
-- Odd-one-out under speed pressure
-- Spot correct Irish word among decoys
-- Partial reveal object recognition
-
-### E. Construction / Transformation
-- Build word from scrambled chunks
-- Repair / clean / assemble chain
-- Dress avatar before weather hazard
-- Pack right item set for destination
-
-**Run composition rule:** no back-to-back identical mechanics more than twice; encourage rapid mechanic switching.
+Design target: a player should understand each microgame in under one second.
 
 ---
 
-## 4) Vocabulary + Category Structure
-Vocabulary is grouped by practical themes and verb clusters:
+## 3) Simplified Microgame System
+A reusable template system where each template has **one objective** and **one dominant input type**.
+
+### Core templates
+1. **Drag object to target**  
+   - Example: **Bó** → drag cow to field.
+2. **Tap correct object**  
+   - Example: **Arán** → tap bread sprite among decoys.
+3. **Swipe direction**  
+   - Example: **Léim** → swipe up to jump.
+4. **Catch falling item**  
+   - Example: **Úll** → move basket and catch apples.
+5. **Hold to fill**  
+   - Example: **Uisce / Ól** → hold and release in target fill zone.
+6. **Simple lane dodge**  
+   - Example: **Báisteach** → move left/right to avoid raindrops.
+
+### Fairness constraints
+- No multi-step instructions.
+- No precision-heavy physics.
+- No tiny hitboxes.
+- Readable foreground with low visual clutter.
+- Difficulty increases by speed/variety, not confusion.
+
+---
+
+## 4) Vocabulary Category Structure
+Use practical, beginner-friendly sets:
+
 - animals
 - food
 - home objects
 - clothes
 - weather
-- transport
 - places
-- body parts
+- transport
 - nature
-- school items
-- daily actions
-- common verbs
-- movement verbs
-- household verbs
+- body parts
+- daily verbs
+- action verbs
 
-Each word includes:
+Each word stores:
 - Irish word
 - English meaning
-- pronunciation guide
+- pronunciation
 - category
-- difficulty tier
-- linked microgame type
+- difficulty
+- linked microgame template
 - sprite/image key
-- pronunciation audio
+- audio reference
 - mastery score
 
 ---
 
-## 5) Scoring + Leaderboards
-### Scoring
-- Base points per clear
-- Speed bonus (faster clear = higher score)
-- Combo / streak multiplier
-- Perfect run bonus (no misses)
-- Category completion bonus
-- Daily challenge bonus
-- Mastery bonus for repeated correct clears
-- Variety bonus when multiple game types are cleared in one run
+## 5) Scoring + Leaderboard Logic
+### Score formula (simple + readable)
+- **Base points** on success
+- **Small speed bonus**
+- **Streak multiplier** (capped)
+- **Daily bonus** for completing daily mode
+- **Category completion bonus** for clean category runs
 
 ### Leaderboards
 - Daily
 - Weekly
 - All-time
-- Category-specific
-- Friends
-- Endless high score
+- Optional friends board
 
-Player profile tracks: level, streak history, mastered categories, best mode, best mechanic.
+Leaderboard entries include: player, score, mode, date, top streak.
 
 ---
 
-## 6) Progression + Unlocks
-- Unlock vocabulary packs by category
-- Unlock advanced variants per mechanic (more hazards, less cue time)
-- Unlock visual themes (palette swaps, CRT/pocket LCD shaders)
-- Unlock avatars and idle animations
-- Unlock bonus modes and boss rounds
-- Reward daily practice streaks
-- Badges for both language mastery and arcade skill
+## 6) Progression System
+- Unlock categories over time
+- Unlock visual themes (palette/UI skins)
+- Unlock avatars
+- Slightly increase run speed at higher tiers
+- Track mastered words (mastery score threshold)
+- Daily streak rewards for return play
 
-Difficulty escalates through:
-- shorter timer windows,
-- denser hazards,
-- decoy similarity,
-- multi-step microgame chains,
-- mixed-prompt rounds (image + audio only).
+Progression should feel rewarding without blocking early fun.
 
 ---
 
-## 7) Onboarding (First 30 Seconds)
-- No long tutorial text
-- Start with 2–3 clear noun/verb words
-- Teach one mechanic at a time in rapid sequence
-- Immediate positive feedback and celebratory VFX
-- Show contrast: each word plays differently
-- Prompt replay immediately to establish “fun first, learning follows”
+## 7) Onboarding Flow (Play-First)
+First session teaches through action, not text walls.
+
+1. **Round 1 (noun):** very easy drag game (e.g., **Bó**)
+2. **Round 2 (verb):** very easy swipe or tap game (e.g., **Léim**)
+3. **Round 3:** repeat with slight speed increase
+4. Show “You’re doing great” feedback and quick replay prompt
+5. Introduce score/streak only after player already succeeds
+
+Tone: celebratory, low pressure, immediate wins.
 
 ---
 
 ## 8) Technical Architecture
-### Client Systems
-- `GameLoopManager`: run flow, pacing, transitions
-- `MicrogameEngine`: template registry, lifecycle, timeout handling
-- `InputLayer`: touch gestures (tap, swipe, drag, hold, release, mash)
-- `VocabularyStore`: category filters, difficulty routing, spaced repetition queue
-- `ScoreEngine`: points, multipliers, bonuses, anti-idle checks
-- `ProgressionSystem`: unlocks, mastery, badges, daily rewards
-- `LeaderboardClient`: submit/fetch score rows
-- `AudioSystem`: pronunciation + arcade SFX + timing cues
+### Frontend (mobile web)
+- `GameLoopManager`: controls run pacing and transitions
+- `MicrogameEngine`: registers/renders templates
+- `InputLayer`: normalized tap/swipe/drag/hold handlers
+- `VocabularyStore`: word pools by category/difficulty
+- `ScoreEngine`: points, bonuses, streak logic
+- `ProgressionService`: unlocks + mastery tracking
+- `LeaderboardService`: local preview + API sync
+- `AudioSystem`: pronunciation + arcade SFX
 
-### Backend (lightweight)
-- User/profile service
-- Vocabulary catalog service
-- Run ingestion + validation
-- Leaderboard aggregation (daily/weekly/all-time)
-- Daily challenge seed endpoint
+### Performance priorities
+- Portrait-first layout
+- Fast scene swaps
+- Low-latency input response
+- Lightweight effects (no heavy particle overload)
 
 ---
 
@@ -166,13 +149,25 @@ interface WordEntry {
   english: string;
   pronunciation: string;
   category:
-    | 'animals' | 'food' | 'home_objects' | 'clothes' | 'weather'
-    | 'transport' | 'places' | 'body_parts' | 'nature' | 'school_items'
-    | 'daily_actions' | 'common_verbs' | 'movement_verbs' | 'household_verbs';
+    | 'animals'
+    | 'food'
+    | 'home_objects'
+    | 'clothes'
+    | 'weather'
+    | 'places'
+    | 'transport'
+    | 'nature'
+    | 'body_parts'
+    | 'daily_verbs'
+    | 'action_verbs';
   difficulty: 1 | 2 | 3;
   microgameType:
-    | 'tap_select' | 'swipe' | 'drag_match' | 'timing' | 'sorting'
-    | 'avoidance' | 'assembly' | 'targeting' | 'lane_dodge' | 'catch';
+    | 'drag_match'
+    | 'tap_select'
+    | 'swipe'
+    | 'catch'
+    | 'hold'
+    | 'lane_dodge';
   spriteKey: string;
   audioUrl: string;
   masteryScore: number;
@@ -182,10 +177,10 @@ interface RunResult {
   userId: string;
   mode: 'quick' | 'endless' | 'daily' | 'category' | 'verb' | 'mixed' | 'practice' | 'boss';
   score: number;
-  streakMax: number;
+  bestStreak: number;
   wordsSeen: string[];
   mistakes: string[];
-  clearsByMicrogameType: Record<string, number>;
+  clearsByType: Record<string, number>;
   createdAt: string;
 }
 ```
@@ -193,30 +188,21 @@ interface RunResult {
 ---
 
 ## 10) Retro Arcade UI Direction
-- Pixel-art sprites with exaggerated poses and hit reactions
-- Bright saturated palette (indigo/violet base + neon accents)
-- Chunky outlines, chunky buttons, chunky HUD chips
-- Brief screen shake/hit-stop on clear/fail
-- Fast transitions (100–180 ms) to sustain arcade rhythm
-- Portrait-first layout with thumb-zone controls
-- Handheld nostalgia touches: scanline overlays, playful bleep bloop SFX
-- Polished simplicity: low cognitive load, high kinetic clarity
+- Retro Nintendo-inspired pixel look
+- Bright, saturated palette
+- Chunky buttons and HUD chips
+- Expressive sprites and readable silhouettes
+- Simple backgrounds + high-contrast foreground objects
+- Short “pop” transitions and crisp feedback states
+- Clear success/fail color coding
+- Fun-first arcade vibe over educational formality
 
 ---
 
-## Representative Word-to-Mechanic Examples
-- **Bó**: guide cow through fence lanes while avoiding mud pits
-- **Madra**: drag/throw bone to dog at correct trajectory
-- **Éan**: flap/fly through obstacle gap
-- **Úll**: catch apples, avoid rotten decoys
-- **Uisce**: fill bucket to line, do not overflow
-- **Rith**: sprint burst through hazard lane
-- **Léim**: swipe up to clear moving gap
-- **Snámh**: weave through rock channels and collect bubbles
-- **Oscail**: open correct door in timed set
-- **Dún**: close all windows before storm gust
-- **Glan**: scrub spreading dirt patches quickly
-- **Bus**: steer into stop lane without collision
-- **Báisteach**: dodge rain and collect umbrellas
-
-This design keeps the educational layer embedded inside high-variety arcade play, ensuring every run feels mechanically fresh and replayable.
+## Playability Checklist (Critical Requirement)
+A microgame ships only if it is:
+- understandable in < 1 second,
+- playable with one clear action,
+- fair on first try,
+- readable on small mobile screens,
+- fun to replay repeatedly.
