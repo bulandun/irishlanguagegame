@@ -65,46 +65,105 @@ h1 { margin: 0; letter-spacing: 1px; font-size: clamp(1.8rem, 8vw, 2.6rem); text
   background: #251e55;
   border-radius: 14px;
   border: 3px solid #120e30;
-  min-height: 310px;
+  min-height: 320px;
   padding: 12px;
 }
-.microgame h3 { margin: 0; font-size: 1.45rem; }
-.microgame .prompt { margin-top: 5px; color: #cdd0ff; }
-.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0; }
-.choice {
-  min-height: 72px;
+.microgame h3 { margin: 0; font-size: 1.4rem; }
+.microgame .prompt { margin: 5px 0 10px; color: #d7daff; }
+.timer-bar { height: 14px; border: 2px solid #120e30; border-radius: 8px; overflow: hidden; background: #44397f; margin-top: 12px; }
+.timer-bar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #49e384, #f6ff8f); }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.choice, .lane-btn {
+  min-height: 64px;
   font-size: 1.15rem;
   border: 3px solid #120e30;
   border-radius: 9px;
   background: #5f53b5;
   color: #fff;
 }
-.arena {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr;
-  margin-top: 12px;
-}
-.target {
-  min-height: 84px;
-  border: 3px dashed #c4ffdb;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  font-size: 1.3rem;
-  background: #294d39;
-}
-.draggables { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.draggable {
-  min-height: 64px;
+.drag-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.drag-item {
+  min-height: 62px;
   border: 3px solid #120e30;
   border-radius: 9px;
   background: #6f5dc9;
   color: white;
   font-size: 1.15rem;
 }
-.timer-bar { height: 14px; border: 2px solid #120e30; border-radius: 8px; overflow: hidden; background: #44397f; margin-top: 12px; }
-.timer-bar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #49e384, #f6ff8f); }
+.swipe-pad {
+  margin-top: 12px;
+  min-height: 140px;
+  border: 3px dashed #ffc765;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #ffe9ac;
+}
+.hold-meter {
+  margin-top: 12px;
+  background: #2e2660;
+  border: 2px solid #120e30;
+  border-radius: 10px;
+  height: 28px;
+  overflow: hidden;
+}
+.hold-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #65a9ff, #7ef5dc);
+}
+.hold-zone {
+  margin-top: 8px;
+  color: #ffe48e;
+  font-size: 0.9rem;
+}
+.lane-wrap {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.lane {
+  min-height: 100px;
+  border: 2px solid #1d1541;
+  border-radius: 8px;
+  background: #3c3074;
+  position: relative;
+  overflow: hidden;
+}
+.player {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.obstacle {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.catch-zone {
+  position: relative;
+  margin-top: 10px;
+  height: 120px;
+  border: 2px solid #120e30;
+  border-radius: 10px;
+  background: #3a2f76;
+  touch-action: none;
+}
+.basket {
+  position: absolute;
+  bottom: 6px;
+  left: 45%;
+  font-size: 1.45rem;
+}
+.faller {
+  position: absolute;
+  top: 6px;
+  font-size: 1.25rem;
+}
 .feedback {
   margin-top: 10px;
   padding: 10px;

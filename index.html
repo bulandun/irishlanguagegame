@@ -11,22 +11,24 @@
     <section id="screen-home" class="screen active">
       <header class="title-wrap">
         <h1>FOCALFOCAL!</h1>
-        <p class="subtitle">Irish Microgame Mayhem</p>
+        <p class="subtitle">Irish Arcade Microgame Chaos</p>
       </header>
       <div class="card">
-        <p>Learn Irish by playing chaotic 3-8 second microgames.</p>
+        <p>Learn Irish by surviving a rapid chain of 3-8 second arcade microgames.</p>
         <div class="button-grid">
           <button id="btn-quick" class="pixel-btn">Quick Play</button>
+          <button id="btn-endless" class="pixel-btn">Endless Arcade</button>
           <button id="btn-daily" class="pixel-btn">Daily Challenge</button>
-          <button id="btn-category" class="pixel-btn">Category Mode</button>
-          <button id="btn-verb" class="pixel-btn">Verb Mode</button>
-          <button id="btn-endless" class="pixel-btn">Endless Mode</button>
-          <button id="btn-practice" class="pixel-btn">Practice Wrong Words</button>
+          <button id="btn-category" class="pixel-btn">Category Run</button>
+          <button id="btn-verb" class="pixel-btn">Verb Rush</button>
+          <button id="btn-mixed" class="pixel-btn">Mixed Madness</button>
+          <button id="btn-practice" class="pixel-btn">Practice Mode</button>
+          <button id="btn-boss" class="pixel-btn">Boss Mode</button>
         </div>
       </div>
       <div class="card small">
         <h2>Player Profile</h2>
-        <p id="profile-stats">Rank Rookie • Streak 0 • Favorite Animals</p>
+        <p id="profile-stats">Level 1 • Daily Streak 0 • Mastered 0 words</p>
       </div>
     </section>
 
@@ -34,11 +36,11 @@
       <div class="card">
         <h2>How it works</h2>
         <ol>
-          <li>See an Irish word + sprite</li>
-          <li>React with tap / drag / swipe</li>
-          <li>Score points, build streak, go faster</li>
+          <li>See or hear an Irish word</li>
+          <li>React with tap / drag / swipe / hold</li>
+          <li>Build combo, score, and mastery</li>
         </ol>
-        <label for="start-level">Starting level</label>
+        <label for="start-level">Difficulty</label>
         <select id="start-level" class="pixel-select">
           <option value="beginner">Beginner</option>
           <option value="intermediate">Intermediate</option>
@@ -65,6 +67,7 @@
         <p id="result-score"></p>
         <p id="result-streak"></p>
         <p id="result-learned"></p>
+        <p id="result-missed"></p>
         <p id="result-rank"></p>
         <div class="button-grid single">
           <button id="btn-replay" class="pixel-btn">Play Again</button>
@@ -77,27 +80,6 @@
       </div>
     </section>
   </div>
-
-  <template id="tpl-tap-select">
-    <div class="microgame tap-game">
-      <h3 class="word"></h3>
-      <p class="prompt"></p>
-      <div class="choices"></div>
-      <div class="timer-bar"><div class="fill"></div></div>
-    </div>
-  </template>
-
-  <template id="tpl-drag-match">
-    <div class="microgame drag-game">
-      <h3 class="word"></h3>
-      <p class="prompt"></p>
-      <div class="arena">
-        <div class="target"></div>
-        <div class="draggables"></div>
-      </div>
-      <div class="timer-bar"><div class="fill"></div></div>
-    </div>
-  </template>
 
   <script src="app.js"></script>
 </body>
